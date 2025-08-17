@@ -6,7 +6,9 @@ async function findAll() {
     return await contactService.findAll()
 }
 
-async function findById(id) {}
+async function findById(id) {
+    return await contactService.findById(id)
+}
 
 async function find(params) {}
 

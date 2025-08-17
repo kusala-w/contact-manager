@@ -4,7 +4,7 @@ const _ = require('lodash')
 
 async function findAll() {
     try {
-        const result = await connectionPool.query('SELECT * FROM contact')
+        const result = await connectionPool.query('SELECT * FROM contact')        
         return result.rows.map(contactModel.mapToObject)
     } catch(error) {
         console.log(`Error in contact.findAll(). Error: ${error}`)
@@ -13,8 +13,9 @@ async function findAll() {
 
 async function findById(id) {
     try {
-        const result = await connectionPool.query(`SELECT * FROM contact WHERE id = ${id}`)
-        return contactModel.mapToObject(result.rows[0])
+        const result = await connectionPool.query(`SELECT * FROM contact WHERE id = ${id}`)        
+        if(result.rowsCount) return contactModel.mapToObject(result.rows[0])
+        return null
     } catch(error) {
         console.log(`Error in contact.findById() for id ${id}. Error: ${error}`)
     }
