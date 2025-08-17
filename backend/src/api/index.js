@@ -2,6 +2,7 @@ const express = require('express')
 const dotenv = require('dotenv')
 const cors = require('cors')
 const router = require('./routes')
+const config = require('../config')
 
 dotenv.config()
 
@@ -10,6 +11,6 @@ app.use(cors())
 app.use(express.json())
 app.use(router)
 
-app.listen(process.env.PORT, () => {    
-    console.log(`Server is running on port ${process.env.PORT}`)    
+app.listen(config.port, () => {    
+    console.log(`Server is running on port ${config.port}`)
 })
