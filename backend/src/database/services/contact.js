@@ -1,8 +1,10 @@
 const _ = require('lodash')
 
-const { contact: contactModel } = require('../models')
 const connectionPool = require('../connectionPool')
 const { DatabaseError } = require('../errors')
+
+const { contact: contactModel } = require('../models')
+const contactHistoryService = require('./contactHistory')
 
 
 async function findAll() {
@@ -62,15 +64,31 @@ async function create(contact) {
 
     fields = fields ? `${fields} )` : null
     values = values ? `${values} )` : null
+    const query = `INSERT INTO contact ${fields} ${values} RETURNING *`
+
+    const dbClient = await connectionPool.connect()
 
     try {
-        const query = `INSERT INTO contact ${fields} ${values}`
-        const result = await connectionPool.query(query)
+        await dbClient.query('BEGIN')
+        const result = await dbClient.query(query)
+        const contact = contactModel.mapToObject(result.rows[0])
+       
+        await contactHistoryService.create({
+            contactId: contact.id,
+            action: 'Create',
+            description: 'Created through the app'
+        }, dbClient)
 
-        return !!result.rowCount
+        await dbClient.query('COMMIT')
+
+        return contact
     } catch (error) {
-        console.error(`Error in contact.create(). Error: ${error}`)
+        await dbClient.query('ROLLBACK')
+
+        console.error(`Error in contact.create(). Error: ${error}`)        
         throw new DatabaseError()
+    } finally {
+        dbClient.release()
     }
     
 }
