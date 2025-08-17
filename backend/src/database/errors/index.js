@@ -1,0 +1,1 @@
+module.exports.DatabaseError = require('./DatabaseError')
