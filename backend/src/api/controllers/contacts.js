@@ -33,8 +33,8 @@ async function create (req, res, next) {
     if (!phone) return next(new MissingParamError('phone'))
 
     try {
-        const isCreated = await contactService.create({firstName, lastName, email, phone, isDeleted: false})
-        res.json({isCreated})
+        const contact = await contactService.create({firstName, lastName, email, phone, isDeleted: false})
+        res.json(contact)
     } catch(err) {
         next(err)
     }
