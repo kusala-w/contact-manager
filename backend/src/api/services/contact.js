@@ -12,7 +12,9 @@ async function findById(id) {
 
 async function find(params) {}
 
-async function create (params) {}
+async function create (params) {
+    return await contactService.create(params)
+}
 
 async function update(id, params) {}
 

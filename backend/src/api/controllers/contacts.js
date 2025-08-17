@@ -24,8 +24,22 @@ async function load (req, res, next) {
     }
 }
 
+async function create (req, res, next) {
+    const { firstName, lastName, email, phone } = req.body
 
-async function create () {}
+    if (!firstName) return next(new MissingParamError('firstName'))
+    if (!lastName) return next(new MissingParamError('lastName'))
+    if (!email) return next(new MissingParamError('email'))
+    if (!phone) return next(new MissingParamError('phone'))
+
+    try {
+        const isCreated = await contactService.create({firstName, lastName, email, phone, isDeleted: false})
+        res.json({isCreated})
+    } catch(err) {
+        next(err)
+    }
+}
+
 async function update () {}
 async function _delete () {}
 
