@@ -5,8 +5,8 @@ const { MissingParamError, InvalidParamError, InvalidSearchParamError } = requir
 
 async function list (req, res, next) {    
     try{
-        const result = await contactService.findAll()
-        res.json(result)
+        const contacts = await contactService.findAll()
+        res.json(contacts)
     } catch(err) {
         next(err)
     }
@@ -19,8 +19,8 @@ async function load (req, res, next) {
     if(isNaN(Number(id))) return next(new InvalidParamError('id'))
     
     try {
-        const result = await contactService.findById(id)
-        res.json(result)
+        const contact = await contactService.findById(id)        
+        res.json(contact)
     } catch (err) {
         next(err)
     }
