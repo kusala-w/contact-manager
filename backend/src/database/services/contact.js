@@ -20,7 +20,7 @@ async function findAll() {
 async function findById(id) {
     try {
         const result = await connectionPool.query(`SELECT * FROM contact WHERE id = ${id}`)        
-        if(result.rowsCount) return contactModel.mapToObject(result.rows[0])
+        if(result.rowCount) return contactModel.mapToObject(result.rows[0])
         return null
     } catch(error) {
         console.error(`Error in contact.findById() for id ${id}. Error: ${error}`)
