@@ -1,4 +1,5 @@
 const _ = require('lodash')
+const validator = require('validator')
 
 const { contact: contactService } = require('../services')
 const { MissingParamError, InvalidParamError, InvalidSearchParamError } = require('../errors')
@@ -43,6 +44,19 @@ async function search (req, res, next) {
     }
 }
 
+async function validateEmail (req, res, next) {
+    const { id, email } = req.body
+
+    if (!email) return next(new MissingParamError('email'))
+
+    try {
+        const isUnique = await contactService.checkIsEmailUnique(email, id)
+        res.json({ isUnique })
+    } catch (err) {
+        next(err)
+    }
+}
+
 async function create (req, res, next) {
     const { firstName, lastName, email, phone } = req.body
 
@@ -50,6 +64,8 @@ async function create (req, res, next) {
     if (!lastName) return next(new MissingParamError('lastName'))
     if (!email) return next(new MissingParamError('email'))
     if (!phone) return next(new MissingParamError('phone'))
+
+    if (!validator.isEmail(email)) return next(new InvalidParamError('email'))
 
     try {
         const contact = await contactService.create({firstName, lastName, email, phone, isDeleted: false})
@@ -95,6 +111,7 @@ module.exports = {
     list,
     load,
     search,
+    validateEmail,
     create,
     update,
     delete: _delete
