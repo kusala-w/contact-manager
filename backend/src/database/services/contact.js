@@ -93,17 +93,18 @@ async function update(id, contact) {
     const updateFields = []
 
     _.forEach(model, (value, key) => {
-        if (key === 'id') return
-        updateFields.push(`${key} = ${value}`)
+        if (['id', 'is_deleted'].includes(key)) return
+        updateFields.push(`${key} = '${value}'`)
     })
 
-    const query = `UPDATE contact SET ${updateFields.join(', ')} WHERE id = ${id}`
+    const query = `UPDATE contact SET ${updateFields.join(', ')} WHERE id = ${id} RETURNING *`
     
     const dbClient = await connectionPool.connect()
 
     try {
         await dbClient.query('BEGIN')
-        const result = await dbClient.query(query)        
+        const result = await dbClient.query(query)
+        const contact = contactModel.mapToObject(result.rows[0])
 
         await contactHistoryService.create({
             contactId: id,
@@ -113,7 +114,7 @@ async function update(id, contact) {
 
         await dbClient.query('COMMIT')
 
-        return true
+        return contact
     } catch (error) {
         await dbClient.query('ROLLBACK')
 
