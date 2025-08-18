@@ -38,14 +38,15 @@ async function find(params) {
 
     const conditions = _.map(paramsToFilter, (value, key) => `${key} = '${value}'`)
 
-    let query = `SELECT * FROM contact`
+    let query = `SELECT * FROM contact_history`
     query = conditions.length ? `${query} WHERE ${conditions.join(' AND ')}` : query
+    query = `${query} ORDER BY created_at`
 
     try {
         const result = await connectionPool.query(query)
         return result.rows.map(contactHistoryModel.mapToObject)
     } catch (error) {
-        console.error(`Error in contactHistory.find() for params ${params.join(',')}. Error: ${error}`)
+        console.error(`Error in contactHistory.find() for params ${conditions.join(',')}. Error: ${error}`)
         throw new DatabaseError()
     }
 }
