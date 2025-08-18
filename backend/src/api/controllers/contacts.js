@@ -1,5 +1,7 @@
+const _ = require('lodash')
+
 const { contact: contactService } = require('../services')
-const { MissingParamError, InvalidParamError } = require('../errors')
+const { MissingParamError, InvalidParamError, InvalidSearchParamError } = require('../errors')
 
 async function list (req, res, next) {    
     try{
@@ -24,6 +26,23 @@ async function load (req, res, next) {
     }
 }
 
+async function search (req, res, next) {
+    if (!req.body) return next(new InvalidSearchParamError())
+
+    const { firstName, lastName, email, phone, isDeleted } = req.body
+
+    const searchParams = _.omitBy({firstName, lastName, email, phone, isDeleted}, _.isUndefined)
+
+    if (_.isEmpty(searchParams)) return next(new InvalidSearchParamError())
+
+    try {
+        const contacts = await contactService.find(searchParams)
+        res.json(contacts)
+    } catch (err) {
+        next(err)
+    }
+}
+
 async function create (req, res, next) {
     const { firstName, lastName, email, phone } = req.body
 
@@ -35,17 +54,47 @@ async function create (req, res, next) {
     try {
         const contact = await contactService.create({firstName, lastName, email, phone, isDeleted: false})
         res.json(contact)
-    } catch(err) {
+    } catch (err) {
         next(err)
     }
 }
 
-async function update () {}
-async function _delete () {}
+async function update (req, res, next) {
+    const { id } = req.params
+    const { firstName, lastName, email, phone } = req.body
+
+    if (!id) return next(new MissingParamError('id'))
+    if (!firstName) return next(new MissingParamError('firstName'))
+    if (!lastName) return next(new MissingParamError('lastName'))
+    if (!email) return next(new MissingParamError('email'))
+    if (!phone) return next(new MissingParamError('phone'))
+
+    try {
+        const contact = await contactService.update(id, { firstName, lastName, email, phone })
+        res.json(contact)
+    } catch (err) {
+        next(err)
+    }
+                    
+}
+
+async function _delete (req, res, next) {
+    const { id } = req.params
+
+    if (!id) return next(new MissingParamError('id'))
+
+    try {
+        const isDeleted = await contactService.delete(id)
+        res.json({ isDeleted })
+    } catch (err) {
+        next(err)
+    }
+}
 
 module.exports = {
     list,
     load,
+    search,
     create,
     update,
     delete: _delete
