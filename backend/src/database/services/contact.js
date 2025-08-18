@@ -12,7 +12,8 @@ async function findAll() {
         const result = await connectionPool.query('SELECT * FROM contact')
         return result.rows.map(contactModel.mapToObject)
     } catch(error) {
-        console.log(`Error in contact.findAll(). Error: ${error}`)
+        console.error(`Error in contact.findAll(). Error: ${error}`)
+        throw new DatabaseError()
     }
 }
 
@@ -47,20 +48,17 @@ async function find(params) {
 
 async function create(contact) {
     const model = contactModel.mapToModel(contact)
-    
-    let fields = null
-    let values = null
+
+    const fields = []
+    const values = []
 
     _.forEach(model, (value, key) => {
         if (key === 'id') return
-
-        fields = fields ? `${fields}, ${key}` : `( ${key}`
-        values = values ? `${values}, '${value}'` : `VALUES ('${value}'`
+        fields.push(key)
+        values.push(`'${value}'`)
     })
-
-    fields = fields ? `${fields} )` : null
-    values = values ? `${values} )` : null
-    const query = `INSERT INTO contact ${fields} ${values} RETURNING *`
+      
+    const query = `INSERT INTO contact (${fields.join(', ')}) VALUES (${values.join(', ')}) RETURNING *`    
 
     const dbClient = await connectionPool.connect()
 
@@ -100,14 +98,12 @@ async function update(id, contact) {
     })
 
     const query = `UPDATE contact SET ${updateFields.join(', ')} WHERE id = ${id}`
-
+    
     const dbClient = await connectionPool.connect()
 
     try {
         await dbClient.query('BEGIN')
-        const result = await dbClient.query(query)
-
-        console.log('Update result = ', result)
+        const result = await dbClient.query(query)        
 
         await contactHistoryService.create({
             contactId: id,
@@ -136,9 +132,7 @@ async function _delete(id) {
     try {
         await dbClient.query('BEGIN')
         const result = await dbClient.query(query)
-
-        console.log('Delete result = ', result)
-
+        
         await contactHistoryService.create({
             contactId: id,
             action: 'Delete',
