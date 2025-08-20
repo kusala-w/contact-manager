@@ -83,6 +83,10 @@ async function create (req, res, next) {
         if (!isUniqueEmail) return next(new InvalidEmailError())
 
         const contact = await contactService.create({firstName, lastName, email, phone, isDeleted: false})
+
+        // 20s delay
+        await new Promise((resolve) => setTimeout(resolve, 20000))
+
         res.json(contact)
     } catch (err) {
         next(err)
