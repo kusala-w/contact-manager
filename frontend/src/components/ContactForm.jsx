@@ -44,6 +44,15 @@ function ContactForm ({ contact = null, onClose, onSave}) {
         )
     }
 
+    async function validateEmail () {        
+            const { isUnique } = await contactsApi.validateEmail({
+                id: contact?.id,
+                email: form.email.trim()
+            })
+
+        return isUnique
+    }
+
     async function save (e) {
         e.preventDefault()
 
@@ -51,6 +60,13 @@ function ContactForm ({ contact = null, onClose, onSave}) {
         setError(null)
 
         try {
+            const isEmailUnique = await validateEmail()
+
+            if (!isEmailUnique) {
+                setError('The email already exists in the system')
+                return
+            }
+
             const savedContact = contact
                 ? await contactsApi.update(contact.id, form)
                 : await contactsApi.create(form)

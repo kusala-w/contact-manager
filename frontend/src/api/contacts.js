@@ -31,10 +31,16 @@ async function loadHistory (id) {
     return response.data
 }
 
+async function validateEmail (data) {    
+    const response = await api.post('/contacts/validate-email', data)    
+    return response.data
+}
+
 export default {
     search,
     create,
     update,
     delete: _delete,
-    loadHistory
+    loadHistory,
+    validateEmail
 }
