@@ -28,8 +28,14 @@ function ContactForm ({ contact = null, onClose, onSave}) {
     }, [contact])
 
     function updateField(e) {
-        const { name, value } = e.target
-        setForm(prev => ({ ...prev, [name]: value}))
+        const { id, value } = e.target
+        let newValue = value
+
+        if (id === 'phone') {
+            newValue = value.replace(/\D/g,'') // remove all non-digits
+        }
+
+        setForm(prev => ({ ...prev, [id]: newValue}))
     }
 
     function isFormValid () {
@@ -69,38 +75,62 @@ function ContactForm ({ contact = null, onClose, onSave}) {
                     onSubmit={save}
                     className="contact-form"
                 >
-                    <input
-                        name='firstName'
-                        placeholder='First Name *'
-                        value={form.firstName}
-                        onChange={updateField}
-                        required
-                        disabled={isSaving}
-                    />
-                    <input
-                        name='lastName'
-                        placeholder='Last Name *'
-                        value={form.lastName}
-                        onChange={updateField}
-                        required
-                        disabled={isSaving}
-                    />
-                    <input
-                        name='email'
-                        placeholder='Email *'
-                        value={form.email}
-                        onChange={updateField}
-                        required
-                        disabled={isSaving}
-                    />
-                    <input
-                        name='phone'
-                        placeholder='Phone *'
-                        value={form.phone}
-                        onChange={updateField}
-                        required
-                        disabled={isSaving}
-                    />
+                    <div className="form-group">
+                        <label htmlFor="firstName">
+                            First Name <span className="required">*</span>
+                        </label>
+                        <input
+                            id='firstName'
+                            type="text"
+                            value={form.firstName}
+                            onChange={updateField}
+                            disabled={isSaving}
+                            required
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label htmlFor="lastName">
+                            Last Name <span className="required">*</span>
+                        </label>
+                        <input
+                            id='lastName'
+                            type='text'
+                            value={form.lastName}
+                            onChange={updateField}                            
+                            disabled={isSaving}
+                            required
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label htmlFor="email">
+                            Email <span className="required">*</span>
+                        </label>
+                        <input
+                            id='email'
+                            type='text'
+                            value={form.email}
+                            onChange={updateField}                            
+                            disabled={isSaving}
+                            required
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label htmlFor="phone">
+                            Phone <span className="required">*</span>
+                        </label>
+                        <input
+                            id='phone'
+                            type='tel'
+                            value={form.phone}
+                            pattern='[0-9]*'
+                            onChange={updateField}                            
+                            disabled={isSaving}
+                            required
+                        />
+                    </div>
                     
                     {error && <p className="error">{error}</p>}
 

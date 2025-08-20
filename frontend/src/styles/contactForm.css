@@ -39,6 +39,19 @@
   text-align: center;
 }
 
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #444;
+  margin-bottom: 0.4rem;
+}
+
 .form-actions {
     display: flex;
     gap: 1rem;
