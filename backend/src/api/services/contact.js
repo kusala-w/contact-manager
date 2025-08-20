@@ -13,9 +13,12 @@ async function find(params, page, limit) {
 }
 
 async function checkIsEmailUnique (email, id = null) {
-    const contacts = await contactService.find({ email })
+    const response = await contactService.find({ email })
 
-    if (id) return !!(!contacts.length || (contacts.length == 1 && contacts[0]?.id === id))
+    if (id) return !!(
+        !response.recordCount 
+        || (response.recordCount == 1 && response.contacts[0]?.id === id)
+    )
     
     return !contacts.length
 }
