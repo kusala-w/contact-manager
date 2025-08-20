@@ -22,7 +22,7 @@ function ContactForm ({ contact = null, onClose, onSave}) {
                 firstName: contact.firstName,
                 lastName: contact.lastName,
                 email: contact.email,
-                phone: contact.email
+                phone: contact.phone
             })
         }
     }, [contact])
