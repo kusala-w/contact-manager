@@ -13,6 +13,7 @@ function ContactsPage () {
     const [totalPages, setTotalPages] = useState(1)
     const [selectedContact, setSelectedContact] = useState(null)
     const [contactHistory, setContactHistory] = useState(null)
+    const [showContactHistory, setShowContactHistory] = useState(false)
     const [showContactForm, setShowContactForm] = useState(false)
 
     const limit = 10
@@ -23,7 +24,7 @@ function ContactsPage () {
             const result = await contactsApi.search({ isDeleted: false }, page, limit)
             setContacts(result.contacts)
 
-            const pageCount = Math.max(result.recordCount / limit, 1)
+            const pageCount = Math.ceil(Math.max(result.recordCount / limit, 1))
             setTotalPages(pageCount)
         } catch (err) {
             console.error(`Error loading Contacts. ${err}`)
@@ -39,6 +40,7 @@ function ContactsPage () {
             const history = await contactsApi.loadHistory(contact.id)            
             setContactHistory(history)
             setSelectedContact(contact)
+            setShowContactHistory(true)
         } catch (err) {
             console.error(err)
         } finally {
@@ -49,6 +51,7 @@ function ContactsPage () {
     function closeHistory () {
         setSelectedContact(null)
         setContactHistory(null)
+        setShowContactHistory(false)
     }
 
     async function deleteContact (contact) {
@@ -97,10 +100,10 @@ function ContactsPage () {
                     {contacts.map((contact) => (
                         <ContactCard 
                             key={contact.id} 
-                            contact={contact}                            
-                            onViewHistory={loadHistory}
+                            contact={contact}                                              
                             onEdit={editContact}
                             onDelete={deleteContact}
+                            onViewHistory={loadHistory}
                         />
                     ))}
                 </div>
@@ -114,11 +117,13 @@ function ContactsPage () {
                 <button onClick={viewNextPage} disabled={page === totalPages}>Next</button>
             </div>
 
-            <ContactHistory
-                contact={selectedContact}
-                history={contactHistory}
-                onClose={closeHistory}
-            />
+            {showContactHistory && (
+                <ContactHistory
+                    contact={selectedContact}
+                    history={contactHistory}
+                    onClose={closeHistory}
+                />
+            )}
 
             {showContactForm && (
                 <ContactForm
