@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import contactsApi from '../api/contacts'
 
 import ContactCard from "../components/ContactCard"
+import ContactForm from "../components/ContactForm";
 import ContactHistory from "../components/ContactHistory";
 import Spinner from '../components/Spinner'
 
@@ -12,6 +13,7 @@ function ContactsPage () {
     const [totalPages, setTotalPages] = useState(1)
     const [selectedContact, setSelectedContact] = useState(null)
     const [contactHistory, setContactHistory] = useState(null)
+    const [showContactForm, setShowContactForm] = useState(false)
 
     const limit = 10
 
@@ -62,6 +64,20 @@ function ContactsPage () {
         }
     }
 
+    async function createContact () {
+        setShowContactForm(true)
+    }
+
+    async function editContact (contact) {
+        setSelectedContact(contact)
+        setShowContactForm(true)
+    }
+
+    function closeContactForm () {
+        setShowContactForm(false)
+        getContacts(page)
+    }
+
     useEffect(() => {
         getContacts()
     }, [page])
@@ -72,6 +88,7 @@ function ContactsPage () {
     return (
         <div>
             <h1>Contacts</h1>
+            <button onClick={createContact}>+ New Contact</button>
 
             {isLoading ? (
                 <Spinner/>
@@ -82,6 +99,7 @@ function ContactsPage () {
                             key={contact.id} 
                             contact={contact}                            
                             onViewHistory={loadHistory}
+                            onEdit={editContact}
                             onDelete={deleteContact}
                         />
                     ))}
@@ -101,6 +119,14 @@ function ContactsPage () {
                 history={contactHistory}
                 onClose={closeHistory}
             />
+
+            {showContactForm && (
+                <ContactForm
+                    contact={selectedContact}
+                    onClose={closeContactForm}
+                    onSave={closeContactForm}
+                />
+            )}
         </div>
     )
 }
