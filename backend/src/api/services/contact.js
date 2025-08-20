@@ -20,7 +20,7 @@ async function checkIsEmailUnique (email, id = null) {
         || (response.recordCount == 1 && response.contacts[0]?.id === id)
     )
     
-    return !contacts.length
+    return !response.contacts?.length
 }
 
 async function create (params) {
