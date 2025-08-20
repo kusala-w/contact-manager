@@ -9,9 +9,11 @@ const {
     MissingParamError
  } = require('../errors')
 
-async function list (req, res, next) {    
+async function list (req, res, next) {
+    const { page, limit } = req.query
+
     try{
-        const contacts = await contactService.findAll()
+        const contacts = await contactService.findAll(page, limit)
         res.json(contacts)
     } catch(err) {
         next(err)
@@ -35,14 +37,15 @@ async function load (req, res, next) {
 async function search (req, res, next) {
     if (!req.body) return next(new InvalidSearchParamError())
 
-    const { firstName, lastName, email, phone, isDeleted } = req.body
+    const { params, page, limit }  = req.body
+    const { firstName, lastName, email, phone, isDeleted } = params
 
     const searchParams = _.omitBy({firstName, lastName, email, phone, isDeleted}, _.isUndefined)
 
     if (_.isEmpty(searchParams)) return next(new InvalidSearchParamError())
 
     try {
-        const contacts = await contactService.find(searchParams)
+        const contacts = await contactService.find(searchParams, page, limit)
         res.json(contacts)
     } catch (err) {
         next(err)

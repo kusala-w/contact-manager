@@ -7,10 +7,22 @@ const { contact: contactModel } = require('../models')
 const contactHistoryService = require('./contactHistory')
 
 
-async function findAll() {
+async function findAll(page, limit) {
     try {
-        const result = await connectionPool.query('SELECT * FROM contact')
-        return result.rows.map(contactModel.mapToObject)
+        const countQuery = 'SELECT COUNT(*)::int AS count FROM contact'
+        const countResult = await connectionPool.query(countQuery)
+        const recordCount = countResult.rows[0].count       
+
+        const offset = (page - 1) * limit
+        const query = `SELECT * FROM contact ORDER BY id LIMIT ${limit} OFFSET ${offset}`
+        const result = await connectionPool.query(query)
+        const contacts = result.rows.map(contactModel.mapToObject)
+
+        return {
+            contacts,
+            recordCount
+        }
+
     } catch(error) {
         console.error(`Error in contact.findAll(). Error: ${error}`)
         throw new DatabaseError()
@@ -28,18 +40,31 @@ async function findById(id) {
     }
 }
 
-async function find(params) {
+async function find(params, page, limit) {
     const model = contactModel.mapToModel(params)
     const paramsToFilter = _.pickBy(model, value => !_.isUndefined(value))
 
     const conditions = _.map(paramsToFilter, (value, key) => `${key} = '${value}'`)
+
+    let countQuery = 'SELECT COUNT(*)::int AS count FROM contact'
+    countQuery = conditions.length ? `${countQuery} WHERE ${conditions.join(' AND ')}` : countQuery
     
-    let query = `SELECT * FROM contact`
+    const offset = (page - 1) * limit
+    let query = 'SELECT * FROM contact'
     query = conditions.length ? `${query} WHERE ${conditions.join(' AND ')}` : query
+    query = `${query} ORDER BY id LIMIT ${limit} OFFSET ${offset}`
 
     try {
+        const countResult = await connectionPool.query(countQuery)
+        const recordCount = countResult.rows[0].count
+
         const result = await connectionPool.query(query)
-        return result.rows.map(contactModel.mapToObject)
+        const contacts = result.rows.map(contactModel.mapToObject)
+
+        return {
+            contacts,
+            recordCount
+        }
     } catch (error) {
         console.error(`Error in contact.find() for params ${params.join(',')}. Error: ${error}`)
         throw new DatabaseError()

@@ -1,15 +1,15 @@
 const { contact: contactService } = require('../../database/services')
 
-async function findAll() {
-    return await contactService.findAll()
+async function findAll(page, limit) {
+    return await contactService.findAll(page, limit)
 }
 
 async function findById(id) {
     return await contactService.findById(id)
 }
 
-async function find(params) {
-    return await contactService.find(params)
+async function find(params, page, limit) {
+    return await contactService.find(params, page, limit)
 }
 
 async function checkIsEmailUnique (email, id = null) {
