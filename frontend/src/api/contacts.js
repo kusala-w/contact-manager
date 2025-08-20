@@ -1,8 +1,5 @@
 import axios from 'axios'
 
-console.log('import.meta.env.VITE_API_BASE_URL = ', import.meta.env.VITE_API_BASE_URL)
-console.log('import.meta.env.VITE_API_TIMEOUT = ', import.meta.env.VITE_API_TIMEOUT)
-
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL,
     timeout: parseInt(import.meta.env.VITE_API_TIMEOUT) || 30000
