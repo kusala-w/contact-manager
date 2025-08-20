@@ -70,12 +70,12 @@
   cursor: not-allowed;
 }
 
-.contacts-table td.actions {
+.contacts-table .actions {
   display: flex;
   gap: 0.5rem;
 }
 
-.contacts-table td.actions button {
+.contacts-table .actions button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -87,22 +87,22 @@
   transition: background-color 0.2s;
 }
 
-.contacts-table td.actions button:hover {
+.contacts-table .actions button:hover {
   opacity: 0.9;
 }
 
-.contacts-table td.actions button:nth-child(1) {
-  background-color: #888; /* History */
+.actions .history {
+  background-color: #888;
   color: #fff;
 }
 
-.contacts-table td.actions button:nth-child(2) {
-  background-color: #4CAF50; /* Edit */
+.actions .edit {
+  background-color: #4CAF50;
   color: #fff;
 }
 
-.contacts-table td.actions button:nth-child(3) {
-  background-color: #f44336; /* Delete */
+.actions .delete {
+  background-color: #f44336;
   color: #fff;
 }
 

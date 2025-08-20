@@ -140,13 +140,19 @@ function ContactsPage () {
                                 <td>{contact.phone}</td>
                                 <td>{contact.isDeleted ? 'No' : 'Yes'}</td>
                                 <td className="actions">
-                                    <button onClick={() => loadHistory(contact)}>
+                                    <button 
+                                    className="history"
+                                    onClick={() => loadHistory(contact)}>
                                         <Clock size={18} />
                                     </button>
-                                    <button onClick={() => editContact(contact)}>
+                                    <button 
+                                    className="edit"
+                                    onClick={() => editContact(contact)}>
                                         <Edit2 size={18} />
                                     </button>
-                                    <button onClick={() => deleteContact(contact)}>
+                                    <button 
+                                    className="delete"
+                                    onClick={() => deleteContact(contact)}>
                                         <Trash2 size={18} />
                                     </button>
                                 </td>
