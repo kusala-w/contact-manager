@@ -1,8 +1,6 @@
 function ContactHistory ({ contact, history, onClose }) {
     if (!contact) return null
 
-    console.log('history = ', history)
-
     return (
         <div className="modal-overlay">
             <div className="modal">

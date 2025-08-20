@@ -52,5 +52,5 @@ io.on('connection', (socket) => {
 })
 
 server.listen(config.port, () => {    
-    console.log(`Server is running on port ${config.port}`)
+    console.info(`Server is running on port ${config.port}`)
 })
