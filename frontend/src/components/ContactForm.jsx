@@ -109,7 +109,7 @@ function ContactForm ({ contact = null, onClose, onSave}) {
                         </label>
                         <input
                             id='email'
-                            type='text'
+                            type='email'
                             value={form.email}
                             onChange={updateField}                            
                             disabled={isSaving}
