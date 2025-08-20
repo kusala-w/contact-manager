@@ -35,6 +35,10 @@
     outline: none;
 }
 
+.contacts-page h2 {
+  text-align: center;
+}
+
 .form-actions {
     display: flex;
     gap: 1rem;
