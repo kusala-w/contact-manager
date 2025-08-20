@@ -12,9 +12,13 @@ async function findAll(page, limit) {
         const countQuery = 'SELECT COUNT(*)::int AS count FROM contact'
         const countResult = await connectionPool.query(countQuery)
         const recordCount = countResult.rows[0].count       
+        
+        let query = 'SELECT * FROM contact ORDER BY id'
+        if (page, limit) {
+            const offset = (page - 1) * limit
+            query = `${query} LIMIT ${limit} OFFSET ${offset}`
+        }
 
-        const offset = (page - 1) * limit
-        const query = `SELECT * FROM contact ORDER BY id LIMIT ${limit} OFFSET ${offset}`
         const result = await connectionPool.query(query)
         const contacts = result.rows.map(contactModel.mapToObject)
 
@@ -31,7 +35,7 @@ async function findAll(page, limit) {
 
 async function findById(id) {
     try {
-        const result = await connectionPool.query(`SELECT * FROM contact WHERE id = ${id}`)        
+        const result = await connectionPool.query(`SELECT * FROM contact WHERE id = ${id}`)
         if(result.rowCount) return contactModel.mapToObject(result.rows[0])
         return null
     } catch(error) {
@@ -49,10 +53,12 @@ async function find(params, page, limit) {
     let countQuery = 'SELECT COUNT(*)::int AS count FROM contact'
     countQuery = conditions.length ? `${countQuery} WHERE ${conditions.join(' AND ')}` : countQuery
     
-    const offset = (page - 1) * limit
     let query = 'SELECT * FROM contact'
     query = conditions.length ? `${query} WHERE ${conditions.join(' AND ')}` : query
-    query = `${query} ORDER BY id LIMIT ${limit} OFFSET ${offset}`
+    if (page && limit) {
+        const offset = (page - 1) * limit
+        query = `${query} ORDER BY id LIMIT ${limit} OFFSET ${offset}`
+    }
 
     try {
         const countResult = await connectionPool.query(countQuery)
@@ -66,7 +72,7 @@ async function find(params, page, limit) {
             recordCount
         }
     } catch (error) {
-        console.error(`Error in contact.find() for params ${params.join(',')}. Error: ${error}`)
+        console.error(`Error in contact.find(). Error: ${error}`)
         throw new DatabaseError()
     }
 }
