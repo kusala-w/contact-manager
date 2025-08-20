@@ -159,3 +159,33 @@ h1 {
 .history-table th {
   background-color: #f4f4f4;
 }
+
+/* Buttons */
+.btn-primary {
+    background-color: #4a4a4a;
+    color: #fff;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: #6b7280;
+    border-color: #6b7280;
+}
+
+.btn-secondary {
+    background-color: #eee;
+    color: #333;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background-color: #d1d5db;
+}

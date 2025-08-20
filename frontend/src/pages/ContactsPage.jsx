@@ -4,6 +4,7 @@ import useSocket from '../hooks/useSocket'
 
 import ContactForm from "../components/ContactForm";
 import ContactHistory from "../components/ContactHistory";
+import DeleteConfirm from "../components/DeleteConfirm";
 import Spinner from '../components/Spinner'
 
 import { Clock, Edit2, Trash2 } from 'lucide-react'
@@ -19,6 +20,7 @@ function ContactsPage () {
     const [showContactHistory, setShowContactHistory] = useState(false)
     const [showContactForm, setShowContactForm] = useState(false)
     const [error, setError] = useState(null)
+    const [showContactDeleteConfirmation, setShowContactDeleteConfirmation] = useState(false)
 
     const limit = 10
 
@@ -62,17 +64,31 @@ function ContactsPage () {
         setShowContactHistory(false)
     }
 
-    async function deleteContact (contact) {
+    function checkDeleteContact (contact) {
+        setSelectedContact(contact)
+        setShowContactDeleteConfirmation(true)
+    }
+
+    function cancelDeleteContact () {
+        setSelectedContact(null)
+        setShowContactDeleteConfirmation(false)
+    }
+
+    async function deleteContact () {
+        if (!selectedContact) return
+
         setLoading(true)
         setError(null)
 
         try {
-            await contactsApi.delete(contact.id)
+            await contactsApi.delete(selectedContact.id)
             await getContacts()
         } catch (err) {
             setError('There was an error deleting Contact.')
             console.error(err)
         } finally {
+            setSelectedContact(null)
+            setShowContactDeleteConfirmation(false)
             setLoading(false)
         }
     }
@@ -141,18 +157,21 @@ function ContactsPage () {
                                 <td>{contact.isDeleted ? 'No' : 'Yes'}</td>
                                 <td className="actions">
                                     <button 
-                                    className="history"
-                                    onClick={() => loadHistory(contact)}>
+                                        className="history"
+                                        onClick={() => loadHistory(contact)}
+                                    >
                                         <Clock size={18} />
                                     </button>
                                     <button 
-                                    className="edit"
-                                    onClick={() => editContact(contact)}>
+                                        className="edit"
+                                        onClick={() => editContact(contact)}
+                                    >
                                         <Edit2 size={18} />
                                     </button>
                                     <button 
-                                    className="delete"
-                                    onClick={() => deleteContact(contact)}>
+                                        className="delete"
+                                        onClick={() => checkDeleteContact(contact)}
+                                    >
                                         <Trash2 size={18} />
                                     </button>
                                 </td>
@@ -184,6 +203,14 @@ function ContactsPage () {
                     onClose={closeContactForm}
                     onSave={closeContactForm}
                 />
+            )}
+
+            {showContactDeleteConfirmation && (
+                <DeleteConfirm
+                    contact={selectedContact}
+                    onConfirm={deleteContact}
+                    onCancel={cancelDeleteContact}
+                />                    
             )}
         </div>
     )
