@@ -14,7 +14,7 @@ function ContactsPage () {
     async function getContacts (page=1) {
         setLoading(true)
         try {            
-            const result = await contactsApi.search({ isDeletd: false }, page, limit)
+            const result = await contactsApi.search({ isDeleted: false }, page, limit)
             setContacts(result.contacts)
             setTotalPages(result.totalPages)
         } catch (err) {
