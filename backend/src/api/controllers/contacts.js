@@ -1,7 +1,10 @@
 const _ = require('lodash')
 const validator = require('validator')
 
-const { contact: contactService } = require('../services')
+const { 
+    contact: contactService,
+    contactHistory: contactHistoryService
+} = require('../services')
 const { 
     InvalidEmailError,
     InvalidParamError, 
@@ -118,6 +121,19 @@ async function _delete (req, res, next) {
     }
 }
 
+async function loadHistory (req, res, next) {
+    const { id } = req.params
+
+    if (!id) return next(new MissingParamError('id'))
+
+    try {
+        const history = await contactHistoryService.find({contactId: id})
+        res.json(history)
+    } catch (err) {
+        next(err)
+    }
+}
+
 module.exports = {
     list,
     load,
@@ -125,5 +141,6 @@ module.exports = {
     validateEmail,
     create,
     update,
-    delete: _delete
+    delete: _delete,
+    loadHistory
 }
