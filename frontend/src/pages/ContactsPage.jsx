@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import contactsApi from '../api/contacts'
+import useSocket from '../hooks/useSocket'
 
 import ContactForm from "../components/ContactForm";
 import ContactHistory from "../components/ContactHistory";
@@ -21,10 +22,10 @@ function ContactsPage () {
 
     const limit = 10
 
-    async function getContacts (page=1) {
+    const getContacts = useCallback(async () => {
         setLoading(true)
         setError(null)
-        try {            
+        try {
             const result = await contactsApi.search({ isDeleted: false }, page, limit)
             setContacts(result.contacts)
 
@@ -36,7 +37,7 @@ function ContactsPage () {
         } finally {
             setLoading(false)
         }
-    }
+    }, [page, limit])
 
     async function loadHistory (contact) {
         setLoading(true)
@@ -67,7 +68,7 @@ function ContactsPage () {
 
         try {
             await contactsApi.delete(contact.id)
-            await getContacts(page)
+            await getContacts()
         } catch (err) {
             setError('There was an error deleting Contact.')
             console.error(err)
@@ -88,12 +89,17 @@ function ContactsPage () {
 
     function closeContactForm () {
         setShowContactForm(false)
-        getContacts(page)
+        getContacts()
     }
 
     useEffect(() => {
         getContacts()
-    }, [page])
+    },[getContacts])
+
+    useSocket(import.meta.env.VITE_CONTACT_UPDATES_CHANNEL, () => {
+        console.info('Refreshing contact data')
+        getContacts()
+    })
     
     const viewNextPage = () => setPage((prev) => Math.min(prev + 1, totalPages))
     const viewPreviousPage = () => setPage((prev) => Math.max(prev - 1, 1))
