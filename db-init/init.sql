@@ -27,7 +27,6 @@ BEGIN
             'id', NEW.id,
             'action', TG_OP,
             'data', NEW.id
-            -- 'data', row_to_json(NEW)
         )::text
     );
     RETURN NEW;
