@@ -1,10 +1,15 @@
-const express = require('express')
-const dotenv = require('dotenv')
 const cors = require('cors')
+const dotenv = require('dotenv')
+const express = require('express')
+const http = require('http')
+
+const { Server } = require('socket.io')
+const { createClient } = require('redis')
+
 const router = require('./routes')
-const config = require('../config')
 
 dotenv.config()
+const config = require('../config')
 
 const app = express()
 app.use(cors())
@@ -21,6 +26,31 @@ app.use((err, req, res, next) => {
     })
 })
 
-app.listen(config.port, () => {    
+// socket.io setup
+const server = http.createServer(app)
+const io = new Server(server, { cors: { origin: "*" } })
+
+// redis
+async function subscribeToRedis() {
+    const redisSub = createClient({ 
+        socket: {
+            host: config.redis.host,
+            port: config.redis.port,
+        }
+     })
+    await redisSub.connect()
+
+    await redisSub.subscribe(config.notifications.contactUpdatesChannel, (message) => {
+        console.info(`Received redis message ${message}`)
+        io.emit(config.notifications.contactUpdatesChannel, message)
+    })
+}
+subscribeToRedis()
+
+io.on('connection', (socket) => {
+    console.info(`Socket connected: ${socket.id}`)
+})
+
+server.listen(config.port, () => {    
     console.log(`Server is running on port ${config.port}`)
 })

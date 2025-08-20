@@ -12,6 +12,12 @@ services:
       - db_data:/var/lib/postgresql/data
       - ./db-init:/docker-entrypoint-initdb.d
 
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+
   backend:
     build:
       context: ./backend
@@ -24,6 +30,8 @@ services:
       DB_USER: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       DB_NAME: ${POSTGRES_DB}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
     ports:
       - "${BACKEND_PORT}:${BACKEND_PORT}"
     volumes:
@@ -31,6 +39,7 @@ services:
       - /app/node_modules
     depends_on:
       - db
+      - redis
 
   frontend:
     build:
