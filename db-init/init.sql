@@ -18,3 +18,24 @@ CREATE TABLE contact_history(
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP    
 );
 
+CREATE OR REPLACE FUNCTION notify_contact_update()
+RETURNS TRIGGER AS $$
+BEGIN
+    PERFORM pg_notify(
+        'contact-updates',
+        json_build_object(
+            'id', NEW.id,
+            'action', TG_OP,
+            'data', NEW.id
+            -- 'data', row_to_json(NEW)
+        )::text
+    );
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS contact_update_trigger ON contact;
+
+CREATE TRIGGER contact_update_trigger
+AFTER INSERT OR UPDATE ON contact
+FOR EACH ROW EXECUTE FUNCTION notify_contact_update();
