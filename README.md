@@ -1,118 +1,160 @@
 # Contact Manager
 
-## Overview
+A small full-stack app built with **React + Node/Express + PostgreSQL + Redis + Socket.IO**.  
+Features:
 
-Contact Manager is a full-stack JavaScript project with:
-
-* **Backend:** Node.js (Express)
-* **Frontend:** React
-* **Database:** PostgreSQL
-
-The project is fully containerized with Docker. All services (backend, frontend, and database) are included, so no additional setup is required.
-
----
-
-## Folder Structure
-
-```
-contact-manager/
-│
-├── backend/         # Node.js backend
-├── frontend/        # React frontend
-├── db-init/         # SQL scripts for initial database setup
-├── docker-compose.dev.yml
-├── docker-compose.prod.yml
-├── Makefile
-├── .env.example
-└── README.md
-```
+- CRUD contacts (first name, last name, email, phone).
+- Simulated **slow API (20s delay)** on contact creation.
+- Edit history tracked via **Postgres trigger** and **listener service**.
+- Real-time updates across clients using **Redis pub/sub + Socket.IO**.
+- Pagination, duplicate email validation, and delete confirmation.
 
 ---
 
-## Setup Instructions
+## 📦 Prerequisites
 
-### 1. Requirements
-
-* Docker and Docker Compose installed ([https://www.docker.com/get-started](https://www.docker.com/get-started))
-* No local Node.js or Postgres installation required
+- **Node.js 22+** (recommended: install with [nvm](https://github.com/nvm-sh/nvm))
+- **Docker & Docker Compose** (for containerized setup)
+- **PostgreSQL 16** & **Redis** (only required if running locally without Docker)
 
 ---
 
-### 2. Environment Variables
+## ⚙️ Environment Variables
 
-Copy `.env.example` to `.env` and adjust if needed:
+Root `.env` (used by backend & Docker):
 
-```bash
-cp .env.example .env
+```env
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=contact-manager-db
+POSTGRES_PORT=5434
+POSTGRES_INTERNAL_PORT=5432
+POSTGRES_HOST=db
+
+BACKEND_PORT=3001
+NODE_ENV=development
+
+REDIS_HOST=redis
+REDIS_PORT=6379
 ```
 
+Frontend `.env` (in `frontend/`):
+
+```env
+VITE_API_BASE_URL=http://localhost:3001
+VITE_API_TIMEOUT=30000
+VITE_CONTACT_UPDATES_CHANNEL=contact-updates
+```
+
+> 💡 **Running locally without Docker?**
+> - Change `POSTGRES_HOST=localhost` and `REDIS_HOST=localhost` in root `.env`.
+> - Ensure Postgres is running on port `5434` (or adjust as needed).
+> - Run `/db-init/init.sql` manually to initialize schema.
+
 ---
 
-### 3. Start Development Environment
+## 🚀 Run with Docker
 
-This mode enables **hot reload** for backend and frontend.
+Start everything:
 
 ```bash
 make dev
 ```
 
-* **Frontend:** [http://localhost:3000](http://localhost:3000)
-* **Backend:** [http://localhost:5000](http://localhost:5000)
-* Database tables are automatically created from `db-init/init.sql`
+- Frontend: [http://localhost:5173](http://localhost:5173)  
+- Backend: [http://localhost:3001](http://localhost:3001)
 
----
-
-### 4. Start Production Environment
-
-This mode uses **optimized builds**:
-
-* React is built and served via nginx
-* Backend runs in production mode
-* Database schema is created automatically if volume is empty
-
-```bash
-make prod
-```
-
-* **Frontend:** [http://localhost:3000](http://localhost:3000)
-* **Backend:** [http://localhost:5000](http://localhost:5000)
-
----
-
-### 5. Stop All Services
+Stop & remove everything (containers + volumes):
 
 ```bash
 make down
 ```
 
-**Note:** Removing volumes will reset the database, so tables will be re-created on next startup.
+Tail logs:
+
+```bash
+make logs
+```
 
 ---
 
-### 6. Database Info
+## 🖥️ Run Locally (no Docker)
 
-* **Host:** `db`
-* **Port:** `${POSTGRES_PORT}`
-* **User:** `${POSTGRES_USER}`
-* **Password:** `${POSTGRES_PASSWORD}`
-* **DB Name:** `${POSTGRES_DB}`
+Make sure **Postgres** and **Redis** are running locally. Example (macOS/Homebrew):
 
-Tables are created on first run from `db-init/init.sql`.
+```bash
+brew services start postgresql@16
+brew services start redis
+```
+
+Backend + listener:
+
+```bash
+cd backend
+npm install
+npm run dev       # server on http://localhost:3001
+npm run listener  # pg/redis listener
+```
+
+Frontend:
+
+```bash
+cd frontend
+npm install
+npm run dev       # vite on http://localhost:5173
+```
+
+Open [http://localhost:5173](http://localhost:5173)
 
 ---
 
-### 7. Quick Reference
+## 🔍 Features to Test
 
-| Command     | Description                              |
-| ----------- | ---------------------------------------- |
-| `make dev`  | Start dev environment (hot reload)       |
-| `make prod` | Start prod environment (optimized build) |
-| `make down` | Stop containers and remove volumes       |
+1. **Create Contact (delayed 20s)**  
+   - Click **+ New Contact**, fill fields → buttons disabled + spinner.  
+   - After ~20s, record appears.
+
+2. **Edit Contact**  
+   - Click ✎ → update field → Save.  
+   - Row updates, and **History (⏱️)** shows changes.
+
+3. **Real-time Updates**  
+   - Open two tabs.  
+   - Edit a contact in tab A → tab B updates instantly.
+
+4. **Duplicate Email Check**  
+   - Try creating a contact with an existing email → validation error on submit.
+
+5. **Pagination**  
+   - If >10 records, use **Previous / Next** to navigate.
+
+6. **Delete with Confirmation**  
+   - Click 🗑️ → confirm → record removed.
+
+7. **Listener Verification**  
+   - Run `make logs` → see `cm_listener` and `cm_backend` messages when CRUD happens.
 
 ---
 
-### Notes
+## 🛠️ Developer Commands (Makefile)
 
-* Just unzip and run `make prod` to see the project in action.
-* No additional installations or configuration required.
-* Database schema is ready on first run.
+```bash
+make dev         # start dev stack (docker)
+make down        # stop & remove all
+make logs        # follow logs
+
+make backend     # run backend locally
+make frontend    # run frontend locally
+make listener    # run listener locally
+```
+
+---
+
+## ✅ Health Check (optional)
+
+Backend exposes a health check:
+
+```
+GET http://localhost:3001/healthz
+→ { "status": "ok" }
+```
