@@ -147,14 +147,3 @@ make backend     # run backend locally
 make frontend    # run frontend locally
 make listener    # run listener locally
 ```
-
----
-
-## ✅ Health Check (optional)
-
-Backend exposes a health check:
-
-```
-GET http://localhost:3001/healthz
-→ { "status": "ok" }
-```
