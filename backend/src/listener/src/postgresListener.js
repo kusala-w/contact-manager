@@ -2,13 +2,22 @@ const { Client } = require('pg')
 const { createClient } = require('redis')
 const config = require('../../config')
 
-const redis = createClient()
+const CHANNEL = process.env.CONTACT_UPDATES_CHANNEL || config.notifications.contactUpdatesChannel
+
+const redis = createClient({
+    socket: {
+        host: process.env.REDIS_HOST || config.redis.host,
+        port: parseInt(process.env.REDIS_PORT || config.redis.port, 10) || 6379
+    }
+})
+
+
 const pg = new Client({
-    user: config.database.user,
-    host: config.database.host,
-    database: config.database.database,
-    password: config.database.password,
-    port: config.database.port
+    host: process.env.POSTGRES_HOST || config.database.host,
+    port: parseInt(process.env.POSTGRES_PORT || config.database.port, 10) || 5432,
+    user: process.env.POSTGRES_USER || config.database.user,
+    password: process.env.POSTGRES_PASSWORD || config.database.password,
+    database: process.env.POSTGRES_DB || config.database.database
 })
 
 async function startPostgresListener() {
@@ -19,7 +28,7 @@ async function startPostgresListener() {
         await pg.connect()
         console.info('Connected to Postgres')
 
-        await pg.query(`LISTEN "${config.notifications.contactUpdatesChannel}"`)
+        await pg.query(`LISTEN "${CHANNEL}"`)
 
         pg.on('notification', (message) => {
             console.info(`Postgres notification: ${JSON.stringify(message)}`)            

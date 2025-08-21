@@ -1,7 +1,7 @@
 services:
   db:
     image: postgres:16-alpine
-    container_name: db
+    container_name: cm_db
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -14,24 +14,26 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: redis
+    container_name: cm_redis
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT}:6379"
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile.dev
-    container_name: backend
+    container_name: cm_backend
     environment:
       NODE_ENV: development
-      DB_HOST: db
-      DB_PORT: ${POSTGRES_INTERNAL_PORT}
-      DB_USER: ${POSTGRES_USER}
-      DB_PASSWORD: ${POSTGRES_PASSWORD}
-      DB_NAME: ${POSTGRES_DB}
-      REDIS_HOST: ${REDIS_HOST}
-      REDIS_PORT: ${REDIS_PORT}
+      BACKEND_PORT: ${BACKEND_PORT}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: ${POSTGRES_INTERNAL_PORT}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      VITE_CONTACT_UPDATES_CHANNEL: ${VITE_CONTACT_UPDATES_CHANNEL}
     ports:
       - "${BACKEND_PORT}:${BACKEND_PORT}"
     volumes:
@@ -41,21 +43,42 @@ services:
       - db
       - redis
 
+  listener:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: cm_listener
+    command: npm run listener
+    environment:
+      NODE_ENV: development
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CONTACT_UPDATES_CHANNEL: contact-updates
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
-    container_name: frontend
+    container_name: cm_frontend
     environment:
-      NODE_ENV: development
-      PORT: ${FRONTEND_PORT}
+      VITE_API_BASE_URL: "http://localhost:${BACKEND_PORT}"
+      VITE_API_TIMEOUT: ${VITE_API_TIMEOUT}
+      VITE_CONTACT_UPDATES_CHANNEL: ${VITE_CONTACT_UPDATES_CHANNEL}
     ports:
       - "${FRONTEND_PORT}:${FRONTEND_PORT}"
     volumes:
       - ./frontend:/app
       - /app/node_modules
-    stdin_open: true
-    tty: true
+    command: ["npm","run","dev","--","--host"]
     depends_on:
       - backend
 
