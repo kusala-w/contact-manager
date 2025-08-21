@@ -24,6 +24,9 @@ Features:
 Root `.env` (used by backend & Docker):
 
 ```env
+# --------------------------
+# Database Configuration
+# --------------------------
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
 POSTGRES_DB=contact-manager-db
@@ -31,9 +34,23 @@ POSTGRES_PORT=5434
 POSTGRES_INTERNAL_PORT=5432
 POSTGRES_HOST=db
 
+# --------------------------
+# Backend Configuration
+# --------------------------
 BACKEND_PORT=3001
 NODE_ENV=development
 
+# --------------------------
+# Frontend Configuration
+# --------------------------
+FRONTEND_PORT=5173
+VITE_API_BASE_URL=http://localhost:${BACKEND_PORT}
+VITE_API_TIMEOUT=35000
+VITE_CONTACT_UPDATES_CHANNEL=contact-updates
+
+# --------------------------
+# Redis Configuration
+# --------------------------
 REDIS_HOST=redis
 REDIS_PORT=6379
 ```
